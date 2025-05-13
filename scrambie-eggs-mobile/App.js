@@ -1,3 +1,4 @@
+// App.js (update your existing file)
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -8,33 +9,41 @@ import TabNavigator from './src/navigation/TabNavigator';
 function Root() {
   const { user, loading } = useAuth();
   
-  console.log('Auth state:', { 
-    user: user, 
-    userExists: !!user,
-    loading: loading 
+  console.log('ROOT RENDER - Auth state:', { 
+    user: user ? 'User exists' : 'No user', 
+    userDetails: user,
+    loading 
   });
   
   if (loading) {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text>Loading...</Text>
+      <View style={styles.container}>
+        <Text>Loading authentication...</Text>
       </View>
     );
   }
   
-  console.log('Showing screen:', user ? 'TabNavigator' : 'AuthStack');
-  return user ? <TabNavigator /> : <AuthStack />;
+  if (!user) {
+    console.log('SHOWING AUTH STACK - No user found');
+    return <AuthStack />;
+  } else {
+    console.log('SHOWING TAB NAVIGATOR - User found:', user.email);
+    return <TabNavigator />;
+  }
 }
 
 export default function App() {
+  console.log('APP COMPONENT RENDER');
   return (
     <AuthProvider>
       <NavigationContainer>
+        <StatusBar style="light" />
         <Root />
       </NavigationContainer>
     </AuthProvider>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -43,4 +52,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-
