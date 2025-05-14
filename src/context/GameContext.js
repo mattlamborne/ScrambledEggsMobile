@@ -7,7 +7,8 @@ import { useAuth } from './AuthContext';
 const GameContext = createContext();
 
 export function GameProvider({ children }) {
-  const { user } = useAuth();
+  const auth = useAuth() || {};
+  const user = auth.user; 
   const [activeGame, setActiveGame] = useState(null);
   const [recentGames, setRecentGames] = useState([]);
   const [loading, setLoading] = useState(false);

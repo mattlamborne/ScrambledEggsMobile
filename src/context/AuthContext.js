@@ -1,7 +1,10 @@
 // src/context/AuthContext.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { supabase } from '../lib/supabase';
 import { Alert } from 'react-native';
+import { supabase } from '../lib/supabase';  // Make sure this path is correct
+
+// Add console log to debug
+console.log("Supabase client in AuthContext:", supabase);
 
 const AuthContext = createContext();
 

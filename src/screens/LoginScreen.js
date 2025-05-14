@@ -1,23 +1,61 @@
-// src/screens/LoginScreen.js - Add navigation to main app for testing
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { COLORS } from '../constants/colors';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const auth = useAuth() || {};
+  const { signIn, user } = auth;
 
-  const handleLogin = () => {
-    // Mock login message
-    Alert.alert('Login', 'Login functionality will be added later');
+  // Check if user is already logged in and navigate to MainApp
+  useEffect(() => {
+    if (user) {
+      navigation.navigate('MainApp');
+    }
+  }, [user]);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter email and password');
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      console.log("Attempting login with:", email);
+      const result = await signIn(email, password);
+      console.log("Login result:", result);
+      
+      if (!result.success) {
+        Alert.alert('Login Error', result.error || 'Failed to login');
+      } else {
+        console.log("Login successful!");
+        
+        // Force navigation with a slight delay to ensure state updates
+        setTimeout(() => {
+          console.log("Navigating to MainApp...");
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'MainApp' }],
+          });
+        }, 100);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      Alert.alert('Error', err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // For development: Add a dev-only button to bypass authentication
-// In LoginScreen.js, update the handleDevBypass function:
-const handleDevBypass = () => {
-  // Navigate to the main app
-  navigation.navigate('MainApp'); // Updated from 'Home' to 'MainApp'
-};
+  // Add the missing handleDevBypass function
+  const handleDevBypass = () => {
+    // Navigate to the main app
+    navigation.navigate('MainApp');
+  };
 
   return (
     <View style={styles.container}>
@@ -40,8 +78,14 @@ const handleDevBypass = () => {
         secureTextEntry
       />
       
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Log In</Text>
+      <TouchableOpacity 
+        style={styles.button} 
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>
+          {loading ? 'Logging in...' : 'Log In'}
+        </Text>
       </TouchableOpacity>
       
       <TouchableOpacity onPress={() => navigation.navigate('Signup')}>

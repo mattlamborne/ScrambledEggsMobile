@@ -1,4 +1,5 @@
-// src/navigation/AuthStack.js
+// src/navigation/AuthStack.js - Completely revised version
+import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
@@ -8,13 +9,26 @@ import TabNavigator from './TabNavigator';
 const Stack = createNativeStackNavigator();
 
 export default function AuthStack() {
+  console.log("Rendering AuthStack");
+  
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Signup" component={SignupScreen} />
-      <Stack.Screen name="PasswordReset" component={PasswordResetScreen} />
-      {/* Renamed from Home to MainApp */}
-      <Stack.Screen name="MainApp" component={TabNavigator} />
+    <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+      <Stack.Screen 
+        name="Login" 
+        component={LoginScreen} 
+      />
+      <Stack.Screen 
+        name="Signup" 
+        component={SignupScreen} 
+      />
+      <Stack.Screen 
+        name="PasswordReset" 
+        component={PasswordResetScreen} 
+      />
+      <Stack.Screen 
+        name="MainApp" 
+        component={TabNavigator} 
+      />
     </Stack.Navigator>
   );
 }

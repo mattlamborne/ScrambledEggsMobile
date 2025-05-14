@@ -1,20 +1,26 @@
-// App.js
-import { NavigationContainer } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
-import TabNavigator from './src/navigation/TabNavigator';
-import { GameProvider } from './src/context/GameContext';
-// Add to your app's entry point (App.js or index.js)
+// App.js - Simplified approach
 import { Buffer } from '@craftzdog/react-native-buffer';
+import 'react-native-url-polyfill/auto';
+
+// Set global objects
 global.Buffer = Buffer;
 global.process = require('process/browser');
 
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { StatusBar } from 'expo-status-bar';
+import { AuthProvider } from './src/context/AuthContext';
+import AuthStack from './src/navigation/AuthStack';
+
 export default function App() {
+  console.log("Rendering main App component");
+  
   return (
-    <GameProvider>
+    <AuthProvider>
       <NavigationContainer>
         <StatusBar style="light" />
-        <TabNavigator />
+        <AuthStack />
       </NavigationContainer>
-    </GameProvider>
+    </AuthProvider>
   );
 }

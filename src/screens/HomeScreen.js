@@ -4,9 +4,12 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'rea
 import { COLORS } from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { useGameContext } from '../context/GameContext';
+import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
 export default function HomeScreen({ navigation }) {
   const { activeGame, recentGames, deleteGame } = useGameContext();
+  const { signOut } = useAuth();
 
   const handleNewGame = () => {
     navigation.navigate('New Game');
@@ -41,6 +44,16 @@ export default function HomeScreen({ navigation }) {
 
   const handleViewHistory = () => {
     navigation.navigate('History');
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      // Navigate back to Login screen after signing out
+      navigation.navigate('Login');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to sign out');
+    }
   };
 
   const renderGameItem = ({ item }) => (
@@ -135,7 +148,7 @@ export default function HomeScreen({ navigation }) {
       
       <TouchableOpacity 
         style={styles.signOutButton}
-        onPress={() => Alert.alert('Sign Out', 'You have been signed out.')}
+        onPress={handleSignOut}
       >
         <Ionicons name="log-out-outline" size={20} color={COLORS.textLight} />
         <Text style={styles.signOutText}>Sign Out</Text>
