@@ -20,7 +20,7 @@
     "browserify-zlib": "^0.2.0",
     "crypto-browserify": "^3.12.1",
     "events": "^3.3.0",
-    "expo": "^53.0.8",
+    "expo": "^53.0.9",
     "expo-dev-client": "~5.1.8",
     "expo-status-bar": "~2.2.3",
     "https-browserify": "^1.0.0",

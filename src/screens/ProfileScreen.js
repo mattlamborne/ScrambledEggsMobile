@@ -1,61 +1,54 @@
 // src/screens/ProfileScreen.js
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { COLORS } from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
 
 export default function ProfileScreen({ navigation }) {
+  const { user, profile, loading, signOut } = useAuth();
+  
+  useEffect(() => {
+    console.log("Profile screen mounted, user:", user?.email);
+    console.log("Profile data:", profile);
+  }, [user, profile]);
+  
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    } catch (error) {
+      console.error("Sign out error:", error);
+      Alert.alert('Error', 'Failed to sign out.');
+    }
+  };
+  
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+  
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.profileHeader}>
         <View style={styles.avatarPlaceholder}>
           <Ionicons name="person" size={64} color="white" />
         </View>
-        <Text style={styles.username}>Player Name</Text>
-        <Text style={styles.email}>username@example.com</Text>
+        <Text style={styles.username}>{profile?.username || user?.email.split('@')[0] || 'Player'}</Text>
+        <Text style={styles.email}>{user?.email || 'No email'}</Text>
       </View>
       
-      <View style={styles.statsCard}>
-        <Text style={styles.cardTitle}>Your Stats</Text>
-        
-        <View style={styles.statRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statLabel}>Games Played</Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>72</Text>
-            <Text style={styles.statLabel}>Best Score</Text>
-          </View>
-        </View>
-      </View>
-      
-      <View style={styles.settingsSection}>
-        <Text style={styles.sectionTitle}>Settings</Text>
-        
-        <TouchableOpacity style={styles.settingItem}>
-          <Ionicons name="person-outline" size={24} color={COLORS.text} />
-          <Text style={styles.settingText}>Edit Profile</Text>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textLight} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.settingItem}>
-          <Ionicons name="settings-outline" size={24} color={COLORS.text} />
-          <Text style={styles.settingText}>Preferences</Text>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textLight} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.settingItem}>
-          <Ionicons name="help-circle-outline" size={24} color={COLORS.text} />
-          <Text style={styles.settingText}>Help & Support</Text>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textLight} />
-        </TouchableOpacity>
-      </View>
+      {/* Rest of your profile screen */}
       
       <TouchableOpacity 
         style={styles.logoutButton}
-        onPress={() => navigation.navigate('Login')}
+        onPress={handleSignOut}
       >
         <Ionicons name="log-out-outline" size={20} color="white" />
         <Text style={styles.logoutText}>Log Out</Text>

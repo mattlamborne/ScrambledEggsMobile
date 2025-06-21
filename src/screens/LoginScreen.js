@@ -10,12 +10,6 @@ export default function LoginScreen({ navigation }) {
   const auth = useAuth() || {};
   const { signIn, user } = auth;
 
-  // Check if user is already logged in and navigate to MainApp
-  useEffect(() => {
-    if (user) {
-      navigation.navigate('MainApp');
-    }
-  }, [user]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -102,6 +96,8 @@ export default function LoginScreen({ navigation }) {
     </View>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: { 

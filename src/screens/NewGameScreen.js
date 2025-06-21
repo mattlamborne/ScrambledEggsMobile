@@ -49,7 +49,9 @@ export default function NewGameScreen({ navigation }) {
     ));
   };
 
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
+    console.log("Start Game button pressed");
+    
     // Validate inputs
     if (!courseName.trim()) {
       Alert.alert('Missing Information', 'Please enter a course name.');
@@ -80,22 +82,21 @@ export default function NewGameScreen({ navigation }) {
       completed: false
     };
     
-    // Save the game using context
-    createGame(newGame);
+    console.log("About to create game with data:", newGame);
     
-    // Show success alert and navigate directly to Active Game
-    Alert.alert(
-      'Game Started',
-      `Started a new game at ${courseName} with ${validPlayers.length} players.`,
-      [
-        { 
-          text: 'OK', 
-          onPress: () => {
-            navigation.navigate('Active Game');
-          }
-        }
-      ]
-    );
+    // Save the game using context - let's bypass the Alert for now to simplify debugging
+    const gameId = await createGame(newGame);
+    
+    console.log("Game created, received ID:", gameId);
+    
+    if (gameId) {
+      console.log("Navigation to Active Game tab");
+      // Navigate directly without the alert for now
+      navigation.navigate('Active Game');
+    } else {
+      console.log("Game creation failed");
+      Alert.alert('Error', 'Failed to create game.');
+    }
   };
 
   return (

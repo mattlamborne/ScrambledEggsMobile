@@ -8,7 +8,7 @@ const GameContext = createContext();
 
 export function GameProvider({ children }) {
   const auth = useAuth() || {};
-  const user = auth.user; 
+  const user = auth?.user; 
   const [activeGame, setActiveGame] = useState(null);
   const [recentGames, setRecentGames] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -41,10 +41,10 @@ export function GameProvider({ children }) {
           game_players (*)
         `)
         .eq('user_id', user.id)
-        .not('completed_at', 'is', null)  // Only completed games
+        .eq('status', 'completed')  // Use status instead of completed_at
         .order('created_at', { ascending: false })
         .limit(10);
-      
+            
       if (error) throw error;
       
       // Transform the data to match your app's expected format
@@ -70,12 +70,12 @@ export function GameProvider({ children }) {
 
   // Fetch active (incomplete) game
   const fetchActiveGame = async () => {
-    if (!user) return;
+    if (!user) return false;
     
     try {
-      setLoading(true);
+      console.log("Fetching active game for user:", user.id);
       
-      // Get the most recent incomplete game
+      // Get the most recent active game
       const { data: gameData, error: gameError } = await supabase
         .from('games')
         .select(`
@@ -83,70 +83,44 @@ export function GameProvider({ children }) {
           game_players (*)
         `)
         .eq('user_id', user.id)
-        .is('completed_at', null)  // Only incomplete games
+        .eq('status', 'active')  // Use status instead of completed_at
         .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();  // Returns null if no record found
+        .limit(1);
       
-      if (gameError) throw gameError;
+      console.log("Active game query result:", gameData);
       
-      if (!gameData) {
+      if (gameError) {
+        console.error("Error fetching active game:", gameError);
+        throw gameError;
+      }
+      
+      if (!gameData || gameData.length === 0) {
+        console.log("No active game found");
         setActiveGame(null);
-        return;
+        return false;
       }
       
-      // Fetch hole scores for the game
-      const { data: holeScores, error: holesError } = await supabase
-        .from('hole_scores')
-        .select(`
-          *,
-          strokes (*)
-        `)
-        .eq('game_id', gameData.id)
-        .order('hole_number', { ascending: true });
-      
-      if (holesError) throw holesError;
-      
-      // Transform data to match app's expected format
-      const transformedHoleScores = holeScores.map(hole => ({
-        hole: hole.hole_number,
-        totalStrokes: hole.total_strokes,
-        strokes: hole.strokes.map(stroke => ({
-          number: stroke.stroke_number,
-          playerName: stroke.player_name,
-        })).sort((a, b) => a.number - b.number),
-      }));
-      
-      // Determine current hole (either the next incomplete hole or the last hole + 1)
-      let currentHole = 1;
-      if (transformedHoleScores.length > 0) {
-        const lastHole = Math.max(...transformedHoleScores.map(h => h.hole));
-        currentHole = lastHole + 1;
-        if (currentHole > gameData.hole_count) {
-          currentHole = gameData.hole_count; // Stay on last hole if all are complete
-        }
-      }
-      
+      // Transform the data to match your app's expected format
       const game = {
-        id: gameData.id,
-        courseName: gameData.course_name,
-        holeCount: gameData.hole_count || 18,
-        players: gameData.game_players.map(player => ({
+        id: gameData[0].id,
+        courseName: gameData[0].course_name,
+        holeCount: gameData[0].hole_count || 18,
+        players: (gameData[0].game_players || []).map(player => ({
           id: player.id,
           name: player.name,
         })),
-        currentHole,
-        holeScores: transformedHoleScores,
-        date: new Date(gameData.created_at),
+        currentHole: 1,
+        holeScores: [],
+        date: new Date(gameData[0].created_at),
         completed: false,
       };
       
+      console.log("Setting active game:", game);
       setActiveGame(game);
+      return true;
     } catch (error) {
       console.error('Error fetching active game:', error);
-      Alert.alert('Error', 'Failed to load active game');
-    } finally {
-      setLoading(false);
+      return false;
     }
   };
 
@@ -172,29 +146,42 @@ export function GameProvider({ children }) {
     }
   };
 
-  // Create a new game
   const createGame = async (gameData) => {
     if (!user) {
       Alert.alert('Error', 'You must be logged in to create a game');
-      return;
+      return null;
     }
     
     try {
       setLoading(true);
       
-      // Create the main game record
+      console.log("Creating game with data:", gameData);
+      
+      // Create game object with status field
+      const gameRecord = {
+        user_id: user.id,
+        course_name: gameData.courseName,
+        hole_count: gameData.holeCount || 18,
+        created_at: new Date().toISOString(),
+        total_score: 0,
+        completed_at: new Date().toISOString(), // Still need a value due to NOT NULL constraint
+        status: 'active'  // Add status field to indicate it's active
+      };
+      
+      console.log("Inserting game record:", gameRecord);
+      
       const { data: game, error: gameError } = await supabase
         .from('games')
-        .insert([{
-          user_id: user.id,
-          course_name: gameData.courseName,
-          hole_count: gameData.holeCount || 18,
-          created_at: new Date().toISOString(),
-        }])
+        .insert([gameRecord])
         .select()
         .single();
       
-      if (gameError) throw gameError;
+      if (gameError) {
+        console.error("Game creation error:", gameError);
+        throw gameError;
+      }
+      
+      console.log("Game created:", game);
       
       // Add players to the game
       const playerRecords = gameData.players.map(player => ({
@@ -202,22 +189,46 @@ export function GameProvider({ children }) {
         name: player.name,
       }));
       
+      console.log("Adding players:", playerRecords);
+      
       const { error: playersError } = await supabase
         .from('game_players')
         .insert(playerRecords);
       
-      if (playersError) throw playersError;
+      if (playersError) {
+        console.error("Player creation error:", playersError);
+        throw playersError;
+      }
       
-      // Clear any draft game
-      await clearDraftGame();
+      console.log("Players added successfully");
       
-      // Refresh active game
-      await fetchActiveGame();
+      // Try to force a refresh of active game
+      const success = await fetchActiveGame();
+      console.log("Active game refreshed:", success ? "Success" : "Failed");
+      
+      // If fetchActiveGame failed, manually set the active game
+      if (!success) {
+        console.log("Manually setting active game");
+        const activeGameData = {
+          id: game.id,
+          courseName: game.course_name,
+          coursePar: gameData.coursePar || 72, // Use the par from input, not DB
+          holeCount: game.hole_count || 18,
+          players: gameData.players,
+          currentHole: 1,
+          holeScores: [],
+          date: new Date(game.created_at),
+          completed: false
+        };
+        
+        console.log("Setting active game:", activeGameData);
+        setActiveGame(activeGameData);
+      }
       
       return game.id;
     } catch (error) {
       console.error('Error creating game:', error);
-      Alert.alert('Error', 'Failed to create game');
+      Alert.alert('Error', 'Failed to create game: ' + error.message);
       return null;
     } finally {
       setLoading(false);
@@ -344,6 +355,7 @@ export function GameProvider({ children }) {
         .update({ 
           total_score: totalScore,
           completed_at: new Date().toISOString(),
+          status: 'completed'  // Update status to completed
         })
         .eq('id', gameId);
         
@@ -393,6 +405,12 @@ export function GameProvider({ children }) {
     }
   };
 
+  // Update active game (in-memory only, not in database)
+  const updateGame = (updatedGameData) => {
+    if (!user) return;
+    setActiveGame(updatedGameData);
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -401,11 +419,13 @@ export function GameProvider({ children }) {
         draftGame,
         loading,
         createGame,
+        fetchActiveGame,
         saveDraftGame,
         clearDraftGame,
         saveHoleScore,
         completeGame,
         deleteGame,
+        updateGame,
         refreshGames: () => {
           fetchRecentGames();
           fetchActiveGame();

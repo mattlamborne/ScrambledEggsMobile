@@ -14,7 +14,8 @@ import GamePlayScreen from '../screens/GamePlayScreen';
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
-  const { activeGame } = useGameContext();
+  const gameContext = useGameContext();
+  const activeGame = gameContext?.activeGame;
 
   return (
     <Tab.Navigator

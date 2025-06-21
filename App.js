@@ -1,4 +1,4 @@
-// App.js - Simplified approach
+// App.js
 import { Buffer } from '@craftzdog/react-native-buffer';
 import 'react-native-url-polyfill/auto';
 
@@ -10,6 +10,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from './src/context/AuthContext';
+import { GameProvider } from './src/context/GameContext';
 import AuthStack from './src/navigation/AuthStack';
 
 export default function App() {
@@ -17,10 +18,12 @@ export default function App() {
   
   return (
     <AuthProvider>
-      <NavigationContainer>
-        <StatusBar style="light" />
-        <AuthStack />
-      </NavigationContainer>
+      <GameProvider>
+        <NavigationContainer>
+          <StatusBar style="light" />
+          <AuthStack />
+        </NavigationContainer>
+      </GameProvider>
     </AuthProvider>
   );
 }

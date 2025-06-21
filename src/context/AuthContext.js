@@ -195,3 +195,24 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+
+const signOut = async () => {
+  try {
+    setLoading(true);
+    // Sign out from supabase
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    
+    // Clear local state
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    
+    return { success: true };
+  } catch (error) {
+    Alert.alert('Error', error.message);
+    return { success: false, error: error.message };
+  } finally {
+    setLoading(false);
+  }
+};

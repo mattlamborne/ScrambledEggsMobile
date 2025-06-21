@@ -1,14 +1,24 @@
-// src/screens/GamePlayScreen.js
-import React, { useState, useEffect } from 'react';
+// src/screens/GamePlayScreen.js - Correct React imports
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { COLORS } from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { useGameContext } from '../context/GameContext';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function GamePlayScreen({ navigation }) {
   // Get the active game from context
-  const { activeGame, updateGame, saveHoleScore, completeGame } = useGameContext();
+  const { activeGame, fetchActiveGame, updateGame, saveHoleScore, completeGame } = useGameContext();
   
+  useFocusEffect(
+    useCallback(() => {
+      console.log("GamePlay screen focused, refreshing active game");
+      fetchActiveGame();
+    }, [fetchActiveGame])
+  );
+  
+  // Rest of your component...
+
   // If there's no active game, show a message
   if (!activeGame) {
     return (
