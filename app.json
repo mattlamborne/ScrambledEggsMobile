@@ -1,5 +1,5 @@
 {
-    "expo": {
+  "expo": {
     "name": "Scrambled Eggs Golf",
     "slug": "scrambled-eggs-mobile",
     "version": "1.0.0",
@@ -29,4 +29,4 @@
       "favicon": "./assets/favicon.png"
     }
   }
-  }
+}

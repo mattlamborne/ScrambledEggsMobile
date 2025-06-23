@@ -20,6 +20,7 @@ export default function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
+        headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
@@ -39,10 +40,6 @@ export default function TabNavigator() {
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: '#AAAAAA',
-        headerStyle: {
-          backgroundColor: COLORS.primary,
-        },
-        headerTintColor: '#fff',
         tabBarStyle: {
           borderTopWidth: 0,
           elevation: 0,
@@ -53,7 +50,6 @@ export default function TabNavigator() {
       <Tab.Screen 
         name="Home" 
         component={HomeScreen}
-        options={{ headerShown: true }}
       />
       <Tab.Screen name="New Game" component={NewGameScreen} />
       

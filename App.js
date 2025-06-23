@@ -1,17 +1,9 @@
-// App.js
-import { Buffer } from '@craftzdog/react-native-buffer';
-import 'react-native-url-polyfill/auto';
-
-// Set global objects
-global.Buffer = Buffer;
-global.process = require('process/browser');
-
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { AuthProvider } from './src/context/AuthContext';
 import { GameProvider } from './src/context/GameContext';
-import AuthStack from './src/navigation/AuthStack';
+import { AuthProvider } from './src/context/AuthContext';
+import RootNavigator from './src/navigation/RootNavigator';
 
 export default function App() {
   console.log("Rendering main App component");
@@ -21,7 +13,7 @@ export default function App() {
       <GameProvider>
         <NavigationContainer>
           <StatusBar style="light" />
-          <AuthStack />
+          <RootNavigator />
         </NavigationContainer>
       </GameProvider>
     </AuthProvider>

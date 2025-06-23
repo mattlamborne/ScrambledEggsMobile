@@ -6,13 +6,14 @@ import { supabase } from '../lib/supabase';
 
 export default function SignupScreen({ navigation }) {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+    if (!email || !password || !username) {
+      Alert.alert('Error', 'Please fill in all fields.');
       return;
     }
     
@@ -25,7 +26,12 @@ export default function SignupScreen({ navigation }) {
     try {
       const { error } = await supabase.auth.signUp({ 
         email, 
-        password 
+        password,
+        options: {
+          data: {
+            username: username,
+          }
+        }
       });
       
       if (error) throw error;
@@ -53,6 +59,14 @@ export default function SignupScreen({ navigation }) {
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+      />
+      
+      <TextInput
+        style={styles.input}
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
       />
       
       <TextInput

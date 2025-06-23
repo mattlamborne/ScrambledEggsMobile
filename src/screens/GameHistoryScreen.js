@@ -1,75 +1,69 @@
 // src/screens/GameHistoryScreen.js
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { supabase } from '../lib/supabase';
 import { COLORS } from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { useGameContext } from '../context/GameContext';
 import GameCard from '../components/GameCard';
+import GradientBackground from '../components/common/GradientBackground';
 
-// Mock data for development
-const mockGames = [
-  { id: '1', courseName: 'Tally', type: '18-Hole', strokes: 72, date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-  { id: '2', courseName: 'Tally', type: '18-Hole', strokes: 72, date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) },
-  { id: '3', courseName: 'Pine Hills', type: '9-Hole', strokes: 36, date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
-];
+export default function GameHistoryScreen() {
+  const { games, loading } = useGameContext();
+  const navigation = useNavigation();
 
-export default function GameHistoryScreen({ navigation }) {
   const renderItem = ({ item }) => (
     <GameCard 
-      game={item}
+      game={{
+        ...item,
+        courseName: item.course_name,
+        type: `${item.hole_count || 18}-Hole`,
+        strokes: item.total_score,
+        date: new Date(item.created_at),
+      }}
       onPress={() => navigation.navigate('GameDetails', { gameId: item.id })}
       onDelete={() => {/* Handle delete */}}
     />
   );
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Game History</Text>
-        <Text style={styles.subtitle}>View and manage your past games</Text>
+  if (loading && games.length === 0) {
+    return (
+      <View style={styles.emptyState}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.emptyStateText}>Loading Game History...</Text>
       </View>
-      
-      {mockGames.length > 0 ? (
+    );
+  }
+
+  return (
+    <GradientBackground>
+      <View style={styles.container}>
+        <Text style={styles.title}>Game History</Text>
         <FlatList
-          data={mockGames}
-          keyExtractor={(item) => item.id}
+          data={games}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
         />
-      ) : (
-        <View style={styles.emptyState}>
-          <Ionicons name="golf-outline" size={64} color={COLORS.disabled} />
-          <Text style={styles.emptyStateText}>No games recorded yet</Text>
-          <TouchableOpacity 
-            style={styles.newGameButton}
-            onPress={() => navigation.navigate('New Game')}
-          >
-            <Text style={styles.newGameButtonText}>Start Your First Game</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+      </View>
+    </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
     padding: 16,
-    backgroundColor: COLORS.card,
-    marginBottom: 8,
+    backgroundColor: 'transparent',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: COLORS.textLight,
+    color: '#fff',
+    marginBottom: 16,
+    paddingTop: 60,
+    textAlign: 'center',
   },
   listContent: {
     padding: 16,

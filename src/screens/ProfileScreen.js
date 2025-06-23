@@ -1,31 +1,39 @@
 // src/screens/ProfileScreen.js
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { COLORS } from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import GradientBackground from '../components/common/GradientBackground';
 
-export default function ProfileScreen({ navigation }) {
-  const { user, profile, loading, signOut } = useAuth();
+export default function ProfileScreen() {
+  const { user, profile, updateProfile, signOut, loading } = useAuth();
   
+  const [fullName, setFullName] = useState('');
+
   useEffect(() => {
-    console.log("Profile screen mounted, user:", user?.email);
-    console.log("Profile data:", profile);
-  }, [user, profile]);
-  
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      });
-    } catch (error) {
-      console.error("Sign out error:", error);
-      Alert.alert('Error', 'Failed to sign out.');
+    if (profile) {
+      setFullName(profile.full_name || '');
+    }
+  }, [profile]);
+
+  const handleUpdateProfile = async () => {
+    if (!fullName.trim()) {
+      Alert.alert('Error', 'Please enter your full name.');
+      return;
+    }
+    
+    const updates = {
+      full_name: fullName,
+      updated_at: new Date(),
+    };
+
+    const { success } = await updateProfile(updates);
+    if (success) {
+      Alert.alert('Success', 'Profile updated successfully!');
     }
   };
-  
+
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center' }]}>
@@ -35,148 +43,127 @@ export default function ProfileScreen({ navigation }) {
   }
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <View style={styles.profileHeader}>
-        <View style={styles.avatarPlaceholder}>
-          <Ionicons name="person" size={64} color="white" />
-        </View>
-        <Text style={styles.username}>{profile?.username || user?.email.split('@')[0] || 'Player'}</Text>
-        <Text style={styles.email}>{user?.email || 'No email'}</Text>
-      </View>
-      
-      {/* Rest of your profile screen */}
-      
-      <TouchableOpacity 
-        style={styles.logoutButton}
-        onPress={handleSignOut}
+    <GradientBackground>
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.contentContainer}
       >
-        <Ionicons name="log-out-outline" size={20} color="white" />
-        <Text style={styles.logoutText}>Log Out</Text>
-      </TouchableOpacity>
-      
-      <Text style={styles.versionText}>Version 1.0.0</Text>
-    </ScrollView>
+        <View style={styles.header}>
+          <Ionicons name="person-circle-outline" size={80} color="#fff" />
+          <Text style={styles.username}>{profile?.username || 'Username'}</Text>
+        </View>
+
+        <View style={styles.form}>
+          <Text style={styles.label}>Full Name</Text>
+          <TextInput
+            style={styles.input}
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="Enter your full name"
+            autoCapitalize="words"
+          />
+          
+          <Text style={styles.label}>Email</Text>
+          <Text style={styles.staticText}>{user?.email}</Text>
+          
+          <TouchableOpacity 
+            style={styles.updateButton} 
+            onPress={handleUpdateProfile}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.updateButtonText}>Update</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={signOut}>
+          <Text style={styles.logoutButtonText}>Log Out</Text>
+        </TouchableOpacity>
+        
+        <Text style={styles.version}>Version 1.0.0</Text>
+      </ScrollView>
+    </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: 'transparent',
   },
   contentContainer: {
     padding: 16,
   },
-  profileHeader: {
+  header: {
     alignItems: 'center',
-    marginVertical: 24,
-  },
-  avatarPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
+    padding: 24,
+    paddingTop: 60,
+    backgroundColor: 'transparent',
   },
   username: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 4,
+    color: '#fff',
+    marginTop: 12,
   },
-  email: {
-    fontSize: 16,
-    color: COLORS.textLight,
-  },
-  statsCard: {
-    backgroundColor: COLORS.card,
+  form: {
+    padding: 24,
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
     borderRadius: 8,
-    padding: 16,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
-  cardTitle: {
-    fontSize: 18,
+  label: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.text,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
     marginBottom: 16,
   },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+  staticText: {
+    backgroundColor: '#eee',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 16,
+    color: '#777',
   },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  divider: {
-    width: 1,
-    height: '80%',
-    backgroundColor: COLORS.border,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: COLORS.textLight,
-  },
-  settingsSection: {
-    backgroundColor: COLORS.card,
+  updateButton: {
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     padding: 16,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 16,
-  },
-  settingItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    marginTop: 8,
   },
-  settingText: {
-    flex: 1,
+  updateButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 16,
-    color: COLORS.text,
-    marginLeft: 12,
   },
   logoutButton: {
-    backgroundColor: '#F44336',
-    flexDirection: 'row',
+    margin: 24,
+    padding: 16,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 14,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E53935',
     borderRadius: 8,
-    marginBottom: 16,
   },
-  logoutText: {
-    color: 'white',
+  logoutButtonText: {
+    color: '#E53935',
     fontWeight: 'bold',
     fontSize: 16,
-    marginLeft: 8,
   },
-  versionText: {
+  version: {
     textAlign: 'center',
     color: COLORS.textLight,
     marginBottom: 24,

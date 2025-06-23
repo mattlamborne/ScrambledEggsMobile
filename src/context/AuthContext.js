@@ -63,29 +63,19 @@ export function AuthProvider({ children }) {
   const signUp = async (email, password, username) => {
     try {
       setLoading(true);
-      // Sign up with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({ 
-        email, 
-        password 
+      // The new Supabase trigger will handle profile creation.
+      // We just need to pass the username in the options.
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username
+          }
+        }
       });
       
       if (authError) throw authError;
-      
-      if (authData?.user) {
-        // Create profile record
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            { 
-              id: authData.user.id,
-              username: username || email.split('@')[0],
-              full_name: '',
-              avatar_url: '',
-            }
-          ]);
-          
-        if (profileError) throw profileError;
-      }
       
       Alert.alert(
         'Success', 

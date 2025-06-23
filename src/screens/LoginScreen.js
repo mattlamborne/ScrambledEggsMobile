@@ -27,15 +27,8 @@ export default function LoginScreen({ navigation }) {
         Alert.alert('Login Error', result.error || 'Failed to login');
       } else {
         console.log("Login successful!");
-        
-        // Force navigation with a slight delay to ensure state updates
-        setTimeout(() => {
-          console.log("Navigating to MainApp...");
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'MainApp' }],
-          });
-        }, 100);
+        // The RootNavigator will handle the navigation automatically
+        // No need for manual navigation here.
       }
     } catch (err) {
       console.error("Login error:", err);

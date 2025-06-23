@@ -4,7 +4,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import PasswordResetScreen from '../screens/PasswordResetScreen';
-import TabNavigator from './TabNavigator';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,10 +23,6 @@ export default function AuthStack() {
       <Stack.Screen 
         name="PasswordReset" 
         component={PasswordResetScreen} 
-      />
-      <Stack.Screen 
-        name="MainApp" 
-        component={TabNavigator} 
       />
     </Stack.Navigator>
   );

@@ -1,29 +1,34 @@
-// src/navigation/MainNavigator.js
+// src/navigation/MainNavigation.js
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TabNavigator from './TabNavigator';
-import GamePlayScreen from '../screens/GamePlayScreen';
+import GameSummaryScreen from '../screens/GameSummaryScreen';
+import GameDetailsScreen from '../screens/GameDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
-export default function MainNavigator() {
+export default function MainNavigation() {
   return (
     <Stack.Navigator>
       <Stack.Screen 
-        name="MainTabs" 
+        name="Main" 
         component={TabNavigator} 
-        options={{ headerShown: false }}
+        options={{ headerShown: false }} 
       />
-      <Stack.Screen 
-        name="GamePlay" 
-        component={GamePlayScreen} 
-        options={({ route }) => ({ 
-          title: route.params?.game?.courseName || 'New Game',
-          headerStyle: {
-            backgroundColor: COLORS.primary,
-          },
-          headerTintColor: '#fff',
-        })}
+      <Stack.Screen
+        name="GameSummary"
+        component={GameSummaryScreen}
+        options={{ 
+          headerShown: false,
+          presentation: 'modal',
+        }}
+      />
+      <Stack.Screen
+        name="GameDetails"
+        component={GameDetailsScreen}
+        options={{ 
+          headerShown: false,
+        }}
       />
     </Stack.Navigator>
   );
