@@ -20,11 +20,11 @@ export default function GameCard({ game, onPress, onDelete }) {
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.courseName}>{game.courseName}</Text>
-        <Text style={styles.strokes}>{game.strokes} strokes</Text>
       </View>
       
       <View style={styles.cardDetails}>
         <Text style={styles.gameType}>{game.type}</Text>
+        <Text style={styles.strokes}>{game.strokes} strokes</Text>
         <Text style={styles.date}>{formatRelativeDate(game.date)}</Text>
       </View>
       
@@ -48,10 +48,10 @@ const styles = StyleSheet.create({
     padding: 16,
     marginVertical: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 8,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -72,6 +72,7 @@ const styles = StyleSheet.create({
   cardDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
   },
   gameType: {

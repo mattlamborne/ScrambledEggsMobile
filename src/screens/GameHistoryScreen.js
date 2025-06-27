@@ -1,6 +1,6 @@
 // src/screens/GameHistoryScreen.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import { COLORS } from '../constants/colors';
@@ -8,9 +8,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useGameContext } from '../context/GameContext';
 import GameCard from '../components/GameCard';
 import GradientBackground from '../components/common/GradientBackground';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function GameHistoryScreen() {
   const { games, loading } = useGameContext();
+  console.log('Fetched games:', games);
   const navigation = useNavigation();
 
   const renderItem = ({ item }) => (
@@ -24,6 +26,7 @@ export default function GameHistoryScreen() {
       }}
       onPress={() => navigation.navigate('GameDetails', { gameId: item.id })}
       onDelete={() => {/* Handle delete */}}
+      showStrokesBetween
     />
   );
 
@@ -38,15 +41,17 @@ export default function GameHistoryScreen() {
 
   return (
     <GradientBackground>
-      <View style={styles.container}>
-        <Text style={styles.title}>Game History</Text>
-        <FlatList
-          data={games}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-        />
-      </View>
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.heading}>Game History</Text>
+          <FlatList
+            data={games}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listContent}
+          />
+        </ScrollView>
+      </SafeAreaView>
     </GradientBackground>
   );
 }
@@ -57,13 +62,15 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: 'transparent',
   },
-  title: {
-    fontSize: 24,
+  heading: {
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 16,
-    paddingTop: 60,
-    textAlign: 'center',
+    color: COLORS.text,
+    textAlign: 'left',
+    marginTop: 0,
+    marginBottom: 24,
+    marginLeft: 16,
+    letterSpacing: 0.2,
   },
   listContent: {
     padding: 16,

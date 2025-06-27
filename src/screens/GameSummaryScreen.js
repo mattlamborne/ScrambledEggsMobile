@@ -93,9 +93,9 @@ export default function GameSummaryScreen({ route, navigation }) {
     navigation.navigate('Main', { screen: 'Home' });
   };
 
-  const handleDiscard = () => {
-    deleteGame(completedGame.id);
-    navigation.navigate('Main', { screen: 'New Game' });
+  const handleEditRound = () => {
+    // TODO: Implement edit round navigation or modal
+    alert('Edit Round feature coming soon!');
   };
 
   return (
@@ -138,13 +138,21 @@ export default function GameSummaryScreen({ route, navigation }) {
           <View style={styles.holeGrid}>
             {completedGame.scores.map(hole => (
               <View key={hole.hole} style={styles.holeItem}>
-                <Text style={styles.holeNumber}>Hole {hole.hole} Par {hole.par}</Text>
-                <Text style={styles.holeScore}>
-                  {hole.totalStrokes} {getScoreEmoji(hole.totalStrokes, hole.par)}
-                </Text>
+                <Text style={styles.holeNumber}>{hole.hole}</Text>
+                <Text style={styles.holeScore}>{getScoreEmoji(hole.totalStrokes, hole.par)}</Text>
               </View>
             ))}
           </View>
+          {/* Running total below the grid */}
+          <Text style={styles.runningTotal}>
+            Total: {completedGame.scores.reduce((sum, h) => sum + (h.totalStrokes || 0), 0)}
+            {(() => {
+              const totalStrokes = completedGame.scores.reduce((sum, h) => sum + (h.totalStrokes || 0), 0);
+              const totalPar = completedGame.scores.reduce((sum, h) => sum + (h.par || 0), 0);
+              const diff = totalStrokes - totalPar;
+              return ` (${diff > 0 ? '+' : ''}${diff} vs Par)`;
+            })()}
+          </Text>
         </View>
 
         {/* Action Buttons */}
@@ -157,9 +165,9 @@ export default function GameSummaryScreen({ route, navigation }) {
 
         <TouchableOpacity 
           style={styles.discardButton}
-          onPress={handleDiscard}
+          onPress={handleEditRound}
         >
-          <Text style={styles.discardButtonText}>Discard & Start New Game</Text>
+          <Text style={styles.discardButtonText}>Edit Round</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -270,24 +278,36 @@ const styles = StyleSheet.create({
   holeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
   },
   holeItem: {
-    width: '48%',
+    width: '11.1%', // 9 per row
     backgroundColor: COLORS.background,
-    padding: 12,
-    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 2,
+    borderRadius: 6,
     marginBottom: 8,
+    alignItems: 'center',
+    marginRight: 2,
   },
   holeNumber: {
-    fontSize: 14,
+    fontSize: 12,
     color: COLORS.textLight,
+    textAlign: 'center',
   },
   holeScore: {
     fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.text,
-    marginTop: 4,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  runningTotal: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginTop: 8,
   },
   saveButton: {
     backgroundColor: COLORS.primary,

@@ -35,14 +35,15 @@ export const GameProvider = ({ children }) => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('games')
-        .select('*')
+        .from('game_players')
+        .select('game:game_id(*), user_id')
         .eq('user_id', user.id)
-        .eq('status', 'completed')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setGames(data);
+      // Extract the game objects and sort by game.created_at descending
+      const games = data.map(gp => gp.game).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setGames(games);
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch game history.');
       console.error('Error fetching game history:', error);
@@ -69,6 +70,7 @@ export const GameProvider = ({ children }) => {
             course_par: gameData.coursePar,
             hole_count: gameData.totalHoles,
             status: 'active',
+            course_id: gameData.courseId,
           },
         ])
         .select()
@@ -77,9 +79,10 @@ export const GameProvider = ({ children }) => {
       if (gameError) throw gameError;
 
       // 2. Add players to the game
-      const playerRecords = gameData.players.map(player => ({
+      const playerRecords = gameData.players.map((player, index) => ({
         game_id: game.id,
         name: player.name,
+        user_id: index === 0 ? user.id : player.user_id || null, // Host gets user.id, others get their user_id if available
       }));
 
       const { data: createdPlayers, error: playersError } = await supabase
@@ -99,6 +102,7 @@ export const GameProvider = ({ children }) => {
         status: 'active',
         currentHole: 1,
         scores: [],
+        courseId: gameData.courseId,
       };
       setActiveGame(newActiveGame);
 
@@ -128,12 +132,32 @@ export const GameProvider = ({ children }) => {
         0
       );
 
+      // Calculate user contribution percentage
+      let userShots = 0;
+      let totalShots = 0;
+      console.log('=== USER CONTRIBUTION DEBUG ===');
+      console.log('User ID:', user.id);
+      console.log('User ID type:', typeof user.id);
+      completedGameData.scores.forEach(hole => {
+        if (hole.strokes && Array.isArray(hole.strokes)) {
+          totalShots += hole.strokes.length;
+          const holeUserShots = hole.strokes.filter(s => s.user_id === user.id).length;
+          userShots += holeUserShots;
+          console.log(`Hole ${hole.hole}: ${holeUserShots}/${hole.strokes.length} user shots`);
+          console.log('Sample stroke:', hole.strokes[0]);
+        }
+      });
+      const userContribution = totalShots > 0 ? Math.round((userShots / totalShots) * 100) : 0;
+      console.log(`Total: ${userShots}/${totalShots} = ${userContribution}%`);
+      console.log('=== END DEBUG ===');
+
       const { error } = await supabase
         .from('games')
         .update({
           status: 'completed',
           total_score: totalScore,
           completed_at: new Date().toISOString(),
+          user_contribution: userContribution,
         })
         .eq('id', completedGameData.id);
 

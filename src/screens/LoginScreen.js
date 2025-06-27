@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground, Image } from 'react-native';
 import { COLORS } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 
@@ -38,67 +38,86 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
-  // Add the missing handleDevBypass function
-  const handleDevBypass = () => {
-    // Navigate to the main app
-    navigation.navigate('MainApp');
-  };
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? 'Logging in...' : 'Log In'}
-        </Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-        <Text style={styles.link}>Don't have an account? Sign Up</Text>
-      </TouchableOpacity>
-
-      {/* Development-only button - remove for production */}
-      <TouchableOpacity 
-        style={[styles.button, styles.devButton]} 
-        onPress={handleDevBypass}
-      >
-        <Text style={styles.buttonText}>DEV: Skip to Main App</Text>
-      </TouchableOpacity>
-    </View>
+    <ImageBackground
+      source={require('../../assets/golf_bg.jpg')}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay} />
+      <View style={styles.container}>
+        <Image
+          source={require('../../assets/scrambledeggslogo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={[styles.title, { color: '#fff' }]}>Login</Text>
+        
+        <TextInput
+          style={styles.inputVisible}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        
+        <TextInput
+          style={styles.inputVisible}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? 'Logging in...' : 'Log In'}
+          </Text>
+        </TouchableOpacity>
+        
+        <Text style={styles.quote}>"Bad day to be a golf course"</Text>
+        
+        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+          <Text style={styles.link}>Don't have an account? Sign Up</Text>
+        </TouchableOpacity>
+      </View>
+    </ImageBackground>
   );
 }
 
 
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    backgroundColor: '#fff', 
-    padding: 24 
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(40,40,40,0.45)',
+    zIndex: 1,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    padding: 24,
+    zIndex: 2,
+  },
+  logo: {
+    width: 169,
+    height: 169,
+    alignSelf: 'center',
+    marginBottom: 16,
   },
   title: { 
     fontSize: 28, 
@@ -106,13 +125,24 @@ const styles = StyleSheet.create({
     color: COLORS.primary, 
     marginBottom: 24 
   },
-  input: { 
-    width: '100%', 
-    borderWidth: 1, 
-    borderColor: COLORS.primary, 
-    borderRadius: 8, 
-    padding: 12, 
-    marginVertical: 8 
+  inputVisible: {
+    width: 280,
+    maxWidth: '80%',
+    height: 52,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderWidth: 0,
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    marginVertical: 10,
+    color: COLORS.text,
+    fontWeight: '400',
+    fontSize: 17,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    textAlignVertical: 'center',
   },
   button: { 
     backgroundColor: COLORS.primary, 
@@ -121,10 +151,6 @@ const styles = StyleSheet.create({
     width: '100%', 
     alignItems: 'center', 
     marginVertical: 16 
-  },
-  devButton: {
-    backgroundColor: '#666',
-    marginTop: 40
   },
   buttonText: { 
     color: '#fff', 
@@ -135,5 +161,16 @@ const styles = StyleSheet.create({
     color: COLORS.secondary, 
     marginTop: 12, 
     fontWeight: 'bold' 
+  },
+  quote: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '400',
+    fontStyle: 'italic',
+    marginBottom: 32,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
 });
